@@ -63,14 +63,32 @@ namespace PersonalPhotos.Test
         {
 
             const string password = "123";
-            var modelView = Mock.Of<LoginViewModel>(x=>x.Email == "asdasd@asd.com" && x.Password == password);
-            var model = Mock.Of<User>(x=>x.Password == password);
+            var modelView = Mock.Of<LoginViewModel>(x => x.Email == "a@b.com" && x.Password == password);
+            var model = Mock.Of<User>(x => x.Password == password);
 
-            _logins.Setup(x=>x.GetUser(model.Email)).ReturnsAsync(model);
+            _logins.Setup(x => x.GetUser(It.IsAny<string>())).ReturnsAsync(model);
 
             var result = await _controller.Login(modelView);
 
             Assert.IsType<RedirectToActionResult>(result);
+
+        }
+
+        [Fact]
+        public async Task Login_GivenWrongPassword_ReturnLoginView()
+        {
+
+            const string password = "123";
+            const string email = "asdasd@asd.com";
+            var modelView = Mock.Of<LoginViewModel>(x => x.Email == email && x.Password == password);
+           
+            var model = Mock.Of<User>(x => x.Email == email && x.Password == "1234");
+
+            _logins.Setup(x => x.GetUser(model.Email)).ReturnsAsync(model);
+
+            var result = await _controller.Login(modelView) as ViewResult;
+
+            Assert.Equal("Login", result.ViewName, ignoreCase: true);
 
         }
 
